@@ -1,35 +1,5 @@
-h = 0.1
+import numpy as np
 
-class PMat:
-
-    def __init__(self, pos, vit, frc, m):
-        self.pos = pos
-        self.vit = vit
-        self.frc = frc
-        self.m = m
-
-    def algo(self):
-        pass
-
-class PMatFix(PMat):
-
-    def __init__(self, pos):
-        super(PMatFix).__init__(pos, 0, 0, 1)
-
-    def algo(self):
-        self.frc = 0
-
-class PMatMobile(PMat):
-
-    def __init__(self, pos, vit, m):
-        super(PMatMobile).__init__(pos, vit, 0, m)
-
-
-    def algo(self):
-        # Leap Frog
-        self.vit += h / self.m * self.frc
-        self.pos += h * self.vit
-        self.frc = 0
 
 class Link:
 
