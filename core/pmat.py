@@ -32,6 +32,9 @@ class PMat:
     def algo(self):
         self._algo(self)
 
+    def draw(self):
+        print(self.position)
+
     @staticmethod
     def pmat_fix(pos):
         return PMat(pos, np.zeros(2), np.zeros(2), 1, fix)

@@ -5,7 +5,7 @@ from .pmat import PMat
 def spring(link):
     d = link.pmat1.distance(link.pmat2)
     f = link.k * (1 - (link.l0 / d))
-    M1M2 = link.pmat1.pos - link.pmat2.pos
+    M1M2 = link.pmat1.position - link.pmat2.position
     link.pmat1.force += f * M1M2
     link.pmat2.force -= f * M1M2
 
@@ -28,3 +28,6 @@ class Link:
     # algo_ressort
     def algo(self):
         spring(self)
+
+    def draw(self):
+        pass

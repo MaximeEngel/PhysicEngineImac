@@ -15,3 +15,4 @@ class Motor:
             pmat.draw()
         for link in self.links:
             link.draw()
+        print("___")
