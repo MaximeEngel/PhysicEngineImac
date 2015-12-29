@@ -5,7 +5,7 @@ from .pmat import PMat
 def spring(link):
     d = link.pmat1.distance(link.pmat2)
     f = link.k * (1 - (link.l0 / d))
-    M1M2 = link.pmat1.position - link.pmat2.position
+    M1M2 = link.pmat2.position - link.pmat1.position
     link.pmat1.force += f * M1M2
     link.pmat2.force -= f * M1M2
 
@@ -29,5 +29,7 @@ class Link:
     def algo(self):
         spring(self)
 
-    def draw(self):
-        pass
+    def draw(self, canvas):
+        x1, y1 = tuple(self.pmat1.position)
+        x2, y2 = tuple(self.pmat2.position)
+        canvas.create_line(x1, y1, x2, y2)

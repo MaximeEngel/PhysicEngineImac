@@ -1,13 +1,14 @@
 from core.motor import Motor
 from core.pmat import PMat
 from core.link import Link
+from core.gui import Gui
 import numpy as np
 
 def modelate(motor, nb_pmat):
     k = 1000.0
-    y = 100.0
-    start_x = 10.0
-    step_x = 10.0
+    y = 200.0
+    start_x = 50.0
+    step_x = 30.0
     motor.pmats.append(PMat.pmat_fix(np.array([start_x, y])))
 
     for i in range(1, nb_pmat - 1):
@@ -24,11 +25,11 @@ def modelate(motor, nb_pmat):
 
 def __main__():
     motor = Motor()
-    modelate(motor, 5)
-    motor.pmats[1].force = np.array([10, 10])
-    for i in range(10):
-        motor.simulate()
-        motor.draw()
+    nb = 10
+    modelate(motor, nb)
+    motor.pmats[int(nb / 2)].position -= np.array([10, 10])
+    gui = Gui(motor)
+    gui.mainloop()
 
 if __name__ == "__main__":
     __main__()
