@@ -32,4 +32,10 @@ class Link:
     def draw(self, canvas):
         x1, y1 = tuple(self.pmat1.position)
         x2, y2 = tuple(self.pmat2.position)
-        canvas.create_line(x1, y1, x2, y2)
+        color = "black"
+        d = self.pmat1.distance(self.pmat2)
+        if self.l0 > d :
+            color = "red"
+        elif self.l0 < d:
+            color = "blue"
+        canvas.create_line(x1, y1, x2, y2, fill=color)

@@ -8,7 +8,7 @@ def modelate(motor, nb_pmat):
     k = 1000.0
     y = 200.0
     start_x = 50.0
-    step_x = 30.0
+    step_x = 20
     motor.pmats.append(PMat.pmat_fix(np.array([start_x, y])))
 
     for i in range(1, nb_pmat - 1):
@@ -25,10 +25,10 @@ def modelate(motor, nb_pmat):
 
 def __main__():
     motor = Motor()
-    nb = 10
+    nb = 30
     modelate(motor, nb)
-    motor.pmats[int(nb / 2)].position -= np.array([10, 10])
-    gui = Gui(motor)
+    motor.pmats[int(nb / 2)].position -= np.array([0, 20])
+    gui = Gui(motor, 800, 400)
     gui.mainloop()
 
 if __name__ == "__main__":
