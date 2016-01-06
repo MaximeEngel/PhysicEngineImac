@@ -1,4 +1,4 @@
-from tkinter import Tk, Canvas
+from Tkinter import Tk, Canvas
 
 class Gui:
     time_before_update = int(1000 / 60.0)

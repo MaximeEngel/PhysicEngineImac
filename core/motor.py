@@ -1,4 +1,4 @@
-from tkinter import Canvas, ALL
+from Tkinter import Canvas, ALL
 import time
 class Motor:
 

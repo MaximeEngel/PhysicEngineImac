@@ -1,8 +1,7 @@
 import numpy as np
 from .constants import H
-from tkinter import Canvas
+from Tkinter import Canvas
 
-# PMat algos
 
 def fix(pmat):
     pmat.force = np.zeros(2)
@@ -39,7 +38,8 @@ class PMat:
     def draw(self, canvas):
         pos1 = self.position - self.radius
         pos2 = self.position + self.radius
-        canvas.create_oval(pos1[0], pos1[1], pos2[0], pos2[1], fill=self.color, outline="")
+        canvas.create_oval(pos1[0], pos1[1], pos2[0], pos2[1],
+			   fill=self.color, outline="")
 
     @staticmethod
     def pmat_fix(pos):

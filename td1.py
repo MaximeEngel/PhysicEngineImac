@@ -2,10 +2,17 @@ from core.motor import Motor
 from core.pmat import PMat
 from core.link import Link
 from core.gui import Gui
+from core.constants import Fe
 import numpy as np
 
+
+# Frequence : Fe = 1 / h
+# Masse : m = 1
+# raideur : k = 1 * Fe^2
+# viscosite : z = 0.1 * Fe
+
 def modelate(motor, nb_pmat):
-    k = 1000.0
+    k = 0.8 * Fe ** 2
     y = 200.0
     start_x = 50.0
     step_x = 20
