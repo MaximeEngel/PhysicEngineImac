@@ -2,7 +2,6 @@ import numpy as np
 from .constants import H
 from Tkinter import Canvas
 
-
 def fix(pmat):
     pmat.force = np.zeros(2)
 

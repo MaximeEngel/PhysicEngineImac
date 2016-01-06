@@ -15,7 +15,7 @@ def modelate(motor, nb_pmat, width):
     k = 0.8 * Fe ** 2
     y = 200.0
     start_x = 50.0
-    step_x = (width - 10) / nb_pmat
+    step_x = (width - 20) / nb_pmat
     motor.pmats.append(PMat.pmat_fix(np.array([start_x, y])))
 
     for i in range(1, nb_pmat - 1):
@@ -25,20 +25,20 @@ def modelate(motor, nb_pmat, width):
     motor.pmats.append(PMat.pmat_fix(np.array([start_x, y])))
 
     for i in range(nb_pmat - 1):
-        link = Link(k, 0.005 * Fe)
+        link = Link(k)
         link.connect(motor.pmats[i], motor.pmats[i + 1])
         motor.links.append(link)
 
 
 def __main__():
-    width = 1000
+    width = 1200
     motor = Motor()
     nb = 30
     modelate(motor, nb, width)
     gui = Gui(motor, width, 800)
     def anim(event):	 
-	# motor.pmats[int(nb / 2)].position -= np.array([15, 25])
-	motor.pmats[int(nb / 2)].force += np.array([5000, 2000])
+	motor.pmats[int(nb / 2)].position -= np.array([5, 15])
+	# motor.pmats[int(nb / 2)].force += np.array([500, 200])
     gui.lunchAnim.bind("<Button-1>", anim)
     gui.mainloop()
 

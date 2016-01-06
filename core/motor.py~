@@ -14,7 +14,7 @@ class Motor:
 
     def draw(self, canvas):
         canvas.delete(ALL)
-        #for pmat in self.pmats:
-            #pmat.draw(canvas)
+        for pmat in self.pmats:
+            pmat.draw(canvas)
         for link in self.links:
             link.draw(canvas)

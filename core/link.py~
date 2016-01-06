@@ -4,32 +4,22 @@ from .pmat import PMat
 
 def spring(link):
     d = link.pmat1.distance(link.pmat2)
-    f = -link.k * (1 - (link.l0 / d))
+    f = link.k * (1 - (link.l0 / d))
     M1M2 = link.pmat2.position - link.pmat1.position
-    link.pmat1.force -= f * M1M2
-    link.pmat2.force += f * M1M2
+    link.pmat1.force += f * M1M2
+    link.pmat2.force -= f * M1M2
 
 def frein(link):
     f = - link.z * (link.pmat1.velocity - link.pmat2.velocity)
-    link.pmat1.force += f 
-    link.pmat2.force -= f
-    
-def springFrein(link):
-    d = link.pmat1.distance(link.pmat2)
-    f = -link.k * (1 - (link.l0 / d))
-    M1M2 = link.pmat2.position - link.pmat1.position
-    frein = - link.z * (link.pmat1.velocity - link.pmat2.velocity)
-    link.pmat1.force -= f * M1M2 - frein
-    link.pmat2.force += f * M1M2 - frein
       
 
 class Link:
 
-    def __init__(self, k, z):
+    def __init__(self, k):
         self.pmat1 = None
         self.pmat2 = None
         self.k = k
-        self.z = z
+        self.z = 0
         self.l0 = 0
         # self.s1 = 0
         # self.s2 = 0
@@ -41,9 +31,7 @@ class Link:
 
     # algo_ressort
     def algo(self):
-    	# spring(self)
-        # frein(self)
-        springFrein(self)
+        spring(self)
 
     def draw(self, canvas):
         x1, y1 = tuple(self.pmat1.position)
