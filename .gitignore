@@ -1,5 +1,8 @@
 *.o
 td
+flag
+g2x_example
+g3x_example
 *.config
 *.creator
 *.creator.user
