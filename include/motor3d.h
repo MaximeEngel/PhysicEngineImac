@@ -8,8 +8,8 @@
 #include <stdio.h>
 
 typedef struct Motor3D {
-    PMat3D* pmats;
-    Link3D* links;
+    PMat3D** pmats;
+    Link3D** links;
     int nbPmats;
     int nbLinks;
     void (*simulate)(struct Motor3D*);

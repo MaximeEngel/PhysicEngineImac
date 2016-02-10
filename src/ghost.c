@@ -116,7 +116,6 @@ static void modelateGhost(int cols, int rows) {
         for (int j = 0; j < cols; ++j) {
             int idx = coordToIdx(j, i, cols);
             if (!ghostHoles[idx]) {
-                printf("%f %f \n", start_x + j * step_x, start_y + i * step_y);
                 PMat3DMovableInit(&(pmats[idx]), (Point3) { start_x + j * step_x, start_y + i * step_y, z }, (Vector3) { 0, 0, 0}, 1.0);
             }
         }
@@ -215,11 +214,13 @@ static void modelateGhost(int cols, int rows) {
     int cpt = 0;
     for (int i = 0; i < nbPmatsWithHoles; ++i) {
         if (!ghostHoles[i]) {
-            m.pmats[cpt] = pmats[i];
+            m.pmats[cpt] = &(pmats[i]);
             cpt++;
         }
     }
-    m.links = links;
+    for (int i = 0; i < nbLinksWithoutHoles; ++i) {
+        m.links[i] = &(links[i]);
+    }
 
     // Very ugly just for test, Add 1 to motor init before uncomment !!!
 //    GravityLink3DInit(&(m.links[nbLinksWithoutHoles]));
@@ -239,8 +240,11 @@ int main(int argc, char **argv)
     printf("_____________________________________ \n");
     int width = 1024, height = 512;
     modelateGhost(20, 20);
-    m.pmats[10].position.z += 10000;
-    printf("distance %f \n", m.pmats[10].distance(&(m.pmats[10]), &(m.pmats[11])));
+    m.pmats[30]->force.z += 0.00001;
+//    printf("distance %f %p\n", m.pmats[0].distance(&(m.pmats[0]), &(m.pmats[1])), &(m.pmats[0]));
+//    for (int i = 0 ; i < 80 ; ++i) {
+//        printf("%f %f %f %p %p\n", m.links[i].l0, m.links[i].p1->position.z, m.links[i].p1->distance(m.links[i].p1, m.links[i].p2),m.links[i].p1, m.links[i].p2);
+//    }
 
     /* creation de la fenetre - titre et tailles (pixels) */
     g3x_InitWindow(*argv,width,height);

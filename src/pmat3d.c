@@ -23,7 +23,6 @@ static double distance3D(PMat3D* othis, PMat3D* p) {
 }
 
 static void drawPMat3D(PMat3D* othis) {
-
     glPushMatrix();
         glTranslatef(othis->position.x, othis->position.y, othis->position.z);
         g3x_Material(rouge,ambi,diff,spec,shin,1.);
