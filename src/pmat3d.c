@@ -23,7 +23,7 @@ static double distance3D(PMat3D* othis, PMat3D* p) {
 }
 
 static void drawPMat3D(PMat3D* othis) {
-    printf("%f %f %f \n", othis->position.x, othis->position.y, othis->position.z);
+
     glPushMatrix();
         glTranslatef(othis->position.x, othis->position.y, othis->position.z);
         g3x_Material(rouge,ambi,diff,spec,shin,1.);
@@ -42,11 +42,9 @@ static void algoMovable3D(PMat3D* othis) {
     othis->velocity.x += H / othis->masse * othis->force.x;
     othis->velocity.y += H / othis->masse * othis->force.y;
     othis->velocity.z += H / othis->masse * othis->force.z;
-
     othis->position.x += H * othis->velocity.x;
     othis->position.y += H * othis->velocity.y;
     othis->position.z += H * othis->velocity.z;
-
     othis->force.x = 0;
     othis->force.y = 0;
     othis->force.z = 0;

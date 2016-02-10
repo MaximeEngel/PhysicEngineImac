@@ -13,6 +13,9 @@ static void spring3D(Link3D* othis) {
     Vector3 p1p2;
     Vec3FromPoint3(&p1p2, &(othis->p1->position), &(othis->p2->position));
     ProdVec3(&p1p2, f);
+    if (d > 100) {
+        printf("%f %f %f \n", d, othis->l0, f);
+    }
 
     Vec3SubVec3(&(othis->p1->force), &p1p2);
     Vec3AddVec3(&(othis->p2->force), &p1p2);
@@ -27,7 +30,7 @@ static void brake3D(Link3D* othis) {
 
 static void springBrake3D(Link3D* othis) {
     spring3D(othis);
-    brake3D(othis);
+    //brake3D(othis);
 }
 
 static void drawLink3D(Link3D* othis) {

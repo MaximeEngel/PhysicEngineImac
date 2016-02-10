@@ -46,6 +46,9 @@ td : tdrope.o link.o pmat.o motor.o mathg2x.o
 flag : tdflag.o link3d.o pmat3d.o motor3d.o math3x.o
 	$(CC) $^ $(lib) -o $@
 
+ghost : ghost.o link3d.o pmat3d.o motor3d.o math3x.o
+	$(CC) $^ $(lib) -o $@
+
 # règle générique de création de xxx.o à partir de src/xxx.c
 %.o : $(src)%.c
 	@echo "module $@"
