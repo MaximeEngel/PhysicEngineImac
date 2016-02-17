@@ -94,8 +94,8 @@ static int modelateHoles(int cols, int rows) {
 }
 
 static void modelateGhost(int cols, int rows) {
-    double k = 0.7 * (Fe * Fe);
-    double xi = 0.1 * Fe;
+    double k = 0.03 * (Fe * Fe);
+    double xi = 0.013 * Fe;
 
     double start_x = -1.0;
     double end_x = 1.0;
@@ -210,7 +210,9 @@ static void modelateGhost(int cols, int rows) {
 
 
     // Pass to physic motor only what is necessary
-    Motor3DInit(&m, nbPmatsWithoutHoles, nbLinksWithoutHoles);
+    printf("copispodfi11");
+    int gravity = 1;
+    Motor3DInit(&m, nbPmatsWithoutHoles, nbLinksWithoutHoles + gravity);
     int cpt = 0;
     for (int i = 0; i < nbPmatsWithHoles; ++i) {
         if (!ghostHoles[i]) {
@@ -221,10 +223,12 @@ static void modelateGhost(int cols, int rows) {
     for (int i = 0; i < nbLinksWithoutHoles; ++i) {
         m.links[i] = &(links[i]);
     }
-
-    // Very ugly just for test, Add 1 to motor init before uncomment !!!
-//    GravityLink3DInit(&(m.links[nbLinksWithoutHoles]));
-//    m.links[nbLinksWithoutHoles].connect(&(m.links[nbLinksWithoutHoles]), &(m.pmats[0]), &(m.pmats[nbPmatsWithoutHoles - 1]));
+    if (gravity != 0) {
+        Link3D* gravity = malloc(sizeof(Link3D));
+        GravityLink3DInit(gravity);
+        gravity->connect(gravity, m.pmats[0], m.pmats[nbPmatsWithoutHoles - 1]);
+        m.links[nbLinksWithoutHoles] = gravity;
+    }
 
 }
 
@@ -237,14 +241,11 @@ static void modelateGhost(int cols, int rows) {
 
 int main(int argc, char **argv)
 {
-    printf("_____________________________________ \n");
+    printf("_____________________AAA________________ \n");
+    printf("start model");
     int width = 1024, height = 512;
     modelateGhost(20, 20);
-    m.pmats[30]->force.z += 0.00001;
-//    printf("distance %f %p\n", m.pmats[0].distance(&(m.pmats[0]), &(m.pmats[1])), &(m.pmats[0]));
-//    for (int i = 0 ; i < 80 ; ++i) {
-//        printf("%f %f %f %p %p\n", m.links[i].l0, m.links[i].p1->position.z, m.links[i].p1->distance(m.links[i].p1, m.links[i].p2),m.links[i].p1, m.links[i].p2);
-//    }
+    m.pmats[50]->position.z += 2;
 
     /* creation de la fenetre - titre et tailles (pixels) */
     g3x_InitWindow(*argv,width,height);

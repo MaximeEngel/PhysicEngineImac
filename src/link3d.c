@@ -30,10 +30,12 @@ static void springBrake3D(Link3D* othis) {
 }
 
 static void drawLink3D(Link3D* othis) {
-   /* g3x_DrawLine(othis->p1->position,
-                 othis->p2->position,
-                 (G3Xcolor) {0.0, 0.0, 0.0, 1.0},
-                 1);*/
+    glLineWidth(2.5);
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_LINES);
+    glVertex3f(othis->p1->position.x, othis->p1->position.y, othis->p1->position.z);
+    glVertex3f(othis->p2->position.x, othis->p2->position.y, othis->p2->position.z);
+    glEnd();
 }
 
 static void noDraw3D(Link3D* othis) { }
