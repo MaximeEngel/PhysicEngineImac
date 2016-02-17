@@ -29,7 +29,11 @@ static void drawPMat3D(PMat3D* othis);
 
 static void algoFix3D(PMat3D* othis);
 
+void setFix3D(PMat3D* othis);
+
 static void algoMovable3D(PMat3D* othis);
+
+static void noDrawPMat3D(PMat3D* othis);
 
 // CONSTRUCTORS
 

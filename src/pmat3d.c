@@ -30,6 +30,8 @@ static void drawPMat3D(PMat3D* othis) {
     glPopMatrix();
 }
 
+static void noDrawPMat3D(PMat3D* othis) { };
+
 static void algoFix3D(PMat3D* othis) {
     othis->velocity.x = 0;
     othis->velocity.y = 0;
@@ -47,6 +49,10 @@ static void algoMovable3D(PMat3D* othis) {
     othis->force.x = 0;
     othis->force.y = 0;
     othis->force.z = 0;
+}
+
+void setFix3D(PMat3D* othis) {
+    othis->algo = &algoFix3D;
 }
 
 // CONSTRUCTORS
