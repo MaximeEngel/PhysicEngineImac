@@ -12,6 +12,20 @@ int ghostHeight = 30;
 PMat3D* sphere1;
 bool shape = true;
 
+
+G3Xhmat ScaleMat;
+G3Xhmat RotMat;
+G3Xhmat TransMat;
+G3Xhmat InvScaleMat;
+G3Xhmat InvRotMat;
+G3Xhmat InvTransMat;
+G3Xhmat transformWorldToCan;
+G3Xhmat transformWorldToCanTemp;
+G3Xhmat transformCanToWorld;
+G3Xhmat transformCanToWorldTemp;
+double x = 0, y = 0, z = 1, theta = 60, sx = 1.5, sy = 2, sz = 2;
+
+
 /* un fonction associee a un bouton 'popup' : */
 /* remise aux positions initiales             */
 static void reset(void)
@@ -258,16 +272,27 @@ static void modelateGhost(int cols, int rows) {
 
     // Spheres
     if (nbSpheres != 0 ) {
+//        sphere1 = malloc(sizeof(PMat3D));
+//        PMat3DFixInit(sphere1, (Point3) { 0, 0, 0 });
+//        sphere1->radius = 0.5f;
+//        m.pmats[nbPmatsWithoutHoles] = sphere1;
+
+//        for (int i = 0; i < nbPmatsWithoutHoles; ++i) {
+//            Link3D* levelLink = malloc(sizeof(Link3D));
+//            LevelLink3DInit(levelLink, k * 20, xi * 10);
+//            levelLink->connect(levelLink, sphere1, m.pmats[i]);
+//            m.links[nbLinksWithoutHoles + 1 + i] = levelLink;
+//        }
         sphere1 = malloc(sizeof(PMat3D));
-        PMat3DFixInit(sphere1, (Point3) { 0, 0, 0 });
+        PMat3DCube(sphere1, (Point3) { 0, 0, 0 }, transformCanToWorld, transformWorldToCan);
         sphere1->radius = 0.5f;
         m.pmats[nbPmatsWithoutHoles] = sphere1;
 
         for (int i = 0; i < nbPmatsWithoutHoles; ++i) {
-            Link3D* levelLink = malloc(sizeof(Link3D));
-            LevelLink3DInit(levelLink, k * 20, xi * 10);
-            levelLink->connect(levelLink, sphere1, m.pmats[i]);
-            m.links[nbLinksWithoutHoles + 1 + i] = levelLink;
+            Link3D* geoLink = malloc(sizeof(Link3D));
+            GeoLink3DInit(geoLink, k * 20, xi * 120);
+            geoLink->connect(geoLink, sphere1, m.pmats[i]);
+            m.links[nbLinksWithoutHoles + 1 + i] = geoLink;
         }
     }
 
@@ -284,10 +309,11 @@ void drawVertexTriangle(PMat3D* p1, PMat3D* p2, PMat3D* p3) {
 }
 
 void drawGhost() {
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
     //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     glBegin(GL_TRIANGLES); //Begin triangle coordinates
+
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
     for(int i = 0; i < ghostWidth - 1; ++i) {
         for(int j = 0; j < ghostHeight; ++j) {
             int idx = coordToIdx(i, j, ghostWidth);
@@ -325,7 +351,15 @@ void drawGhost() {
 static void drawg3x()
 {
     if(shape) {
+        g3x_Material(jaune,ambi,diff,spec,shin,1.);
         drawGhost();
+        g3x_Material(rouge,ambi,diff,spec,shin,1.);
+        glPushMatrix();
+            glTranslatef(-x,-y, -z);
+            glRotatef(-theta,0.,1.,0.);
+            glScalef(1.0/sx * 0.96, 1.0/sy * 0.96, 1.0/sz * 0.96);
+            glutSolidCube(2.);
+        glPopMatrix();
     } else {
         m.draw(&m);
     }
@@ -341,10 +375,23 @@ static void drawg3x()
 
 int main(int argc, char **argv)
 {
+    g3x_MakeTranslationXYZ(TransMat, x, y, z);
+    g3x_MakeHomothetieXYZ(ScaleMat, sx, sy, sz);
+    g3x_MakeRotationY(RotMat, theta);
+    g3x_MakeTranslationXYZ(InvTransMat, -x, -y, -z);
+    g3x_MakeHomothetieXYZ(InvScaleMat, 1.0/sx, 1.0/sy, 1.0/sz);
+    g3x_MakeRotationY(InvRotMat, -theta);
+    // S*R*T -> world to can
+    g3x_ProdHMat(ScaleMat, RotMat, transformWorldToCanTemp);
+    g3x_ProdHMat(transformWorldToCanTemp, TransMat, transformWorldToCan);
+    // T * R * S -> can to world
+    g3x_ProdHMat(InvTransMat, InvRotMat, transformCanToWorldTemp);
+    g3x_ProdHMat(transformCanToWorldTemp, InvScaleMat, transformCanToWorld);
+
     int width = 1024, height = 512;
     modelateGhost(ghostWidth, ghostHeight);
     m.pmats[50]->position.z += 2;
-glEnable(GL_TEXTURE_2D);
+    glEnable(GL_TEXTURE_2D);
     /* creation de la fenetre - titre et tailles (pixels) */
     g3x_InitWindow(*argv,width,height);
     g3x_SetPerspective(40.,100.,1.);
@@ -382,6 +429,7 @@ glEnable(GL_TEXTURE_2D);
      glBindTexture(GL_TEXTURE_2D, tex_2d);
      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
 
      g3x_SetExitFunction(quitg3x  );     /* la fonction de sortie */
      g3x_SetDrawFunction(drawg3x);     /* la fonction de Dessin */

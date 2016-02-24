@@ -28,10 +28,13 @@ static void noDraw3D(Link3D* othis);
 static void gravity3D(Link3D* othis);
 static void connectLevel3D(Link3D* othis, PMat3D* p1, PMat3D* p2);
 static void springBrakeLevel3D(Link3D* othis);
+static void springBrakeGeo3D(Link3D* othis);
+static void connectGeo3D(Link3D* othis, PMat3D* solid, PMat3D* pmat);
 // Constructor
 
 void Link3DInit(Link3D* othis, double k, double z);
 void GravityLink3DInit(Link3D* othis);
 void LevelLink3DInit(Link3D* othis, double k, double z);
+void GeoLink3DInit(Link3D* othis, double k, double z);
 
 #endif

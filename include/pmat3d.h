@@ -13,6 +13,8 @@ typedef struct PMat3D {
     Vector3 velocity;
     Vector3 force;
     float masse;
+    G3Xhmat worldToCan;
+    G3Xhmat canToWorld;
 
     float radius;
     G3Xcolor color;
@@ -20,6 +22,7 @@ typedef struct PMat3D {
     void (*algo)(struct PMat3D*);
     void (*draw)(struct PMat3D*);
     double (*distance)(struct PMat3D*, struct PMat3D*);
+    bool (*distanceGeo)(struct PMat3D*, struct PMat3D*, Vector3* N);
 
 }PMat3D;
 
@@ -35,9 +38,14 @@ static void algoMovable3D(PMat3D* othis);
 
 static void noDrawPMat3D(PMat3D* othis);
 
+static bool distanceGeoCube(PMat3D* othis, PMat3D* p, Vector3* N);
+static bool uselessDistanceGeo(PMat3D* othis, PMat3D* p, Vector3* N);
+
 // CONSTRUCTORS
 
 void PMat3DFixInit(PMat3D* othis, Point3 pos);
 
 void PMat3DMovableInit(PMat3D* othis, Point3 pos, Vector3 vel, float m);
+
+void PMat3DCube(PMat3D* othis, Point3 pos, G3Xhmat canToWorld, G3Xhmat worldToCan);
 #endif

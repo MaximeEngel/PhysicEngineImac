@@ -12,6 +12,11 @@ static void connectLevel3D(Link3D* othis, PMat3D* solid, PMat3D* pmat) {
     othis->l0 = solid->radius;
 }
 
+static void connectGeo3D(Link3D* othis, PMat3D* solid, PMat3D* pmat) {
+    othis->p1 = solid;
+    othis->p2 = pmat;
+}
+
 static void spring3D(Link3D* othis) {
     double d = othis->p1->distance(othis->p1, othis->p2);
 
@@ -40,6 +45,18 @@ static void springBrakeLevel3D(Link3D* othis) {
     if (d <= othis->l0) {
         spring3D(othis);
         brake3D(othis);
+    }
+}
+
+static void springBrakeGeo3D(Link3D* othis) {
+    Vector3 N;
+    if (othis->p1->distanceGeo(othis->p1, othis->p2, &N)) {
+        ProdVec3(&N, othis->k);
+        Vec3AddVec3(&(othis->p2->force), &N);
+        Vector3 f = othis->p1->velocity;
+        ProdVec3(Vec3SubVec3(&f, &(othis->p2->velocity)), - othis->z);
+        Vec3SubVec3(&(othis->p2->force), &f);
+        //printf("%f %f %f \n", N.x, N.y, N.z);
     }
 }
 
@@ -98,4 +115,18 @@ void LevelLink3DInit(Link3D* othis, double k, double z) {
     othis->algo = &springBrakeLevel3D;
     othis->draw = &noDraw3D;
     othis->connect = &connectLevel3D;
+}
+
+void GeoLink3DInit(Link3D* othis, double k, double z) {
+    othis->k = k;
+    othis->z = z;
+    othis->l0 = 0;
+    // P1 is the geo point
+    othis->p1 = NULL;
+    // p2 is the move point
+    othis->p2 = NULL;
+
+    othis->algo = &springBrakeGeo3D;
+    othis->draw = &noDraw3D;
+    othis->connect = &connectGeo3D;
 }
