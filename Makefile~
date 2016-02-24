@@ -20,7 +20,7 @@ else               #en mode normal
 endif
 
 # assemblage des infos de lib. et inc.
-lib =   $(libG2X)$(CCEXT) $(libG3X)$(CCEXT) -lSOIL
+lib =   $(libG2X)$(CCEXT) $(libG3X)$(CCEXT) ./libSOIL.a
 # fichiers *.c locaux
 src = src/
 # fichiers *.h locaux et lib.

@@ -1,5 +1,6 @@
 #include <g3x.h>
 #include "../include/motor3d.h"
+#include <SOIL/SOIL.h>
 
 Motor3D m;
 bool* ghostHoles;
@@ -9,6 +10,7 @@ PMat3D* pmats;
 int ghostWidth = 30;
 int ghostHeight = 30;
 PMat3D* sphere1;
+bool shape = true;
 
 /* un fonction associee a un bouton 'popup' : */
 /* remise aux positions initiales             */
@@ -51,7 +53,8 @@ static CoordIdx idxToCoord(int idx, int cols) {
 
 
 static int modelateHoles(int cols, int rows) {
-    int sizeEye = cols / 12;
+    int sizeEye = cols / 22;
+    int sizeMouth = sizeEye * 3;
     ghostHoles = calloc(rows * cols, sizeof(bool));
     CoordIdx leftEye;
     leftEye.row = 2 * rows / 3;
@@ -92,15 +95,16 @@ static int modelateHoles(int cols, int rows) {
         }
     }
 
-//    for (int i = 0 ; i <= sizeEye; ++i) {
-//        for (int j = 0; j < nbPointsByLine; ++j) {
-//            int x = mouth.col - nbPointsByLine / 2 + j;
-//            int y = mouth.row + i;
-//            int idx = y * cols + x;
-//            ghostHoles[idx] = true;
-//            nbHoles++;
-//         }
-//    }
+    nbPointsByLine = sizeMouth;
+    for (int i = 0 ; i <= sizeMouth; ++i) {
+        for (int j = 0; j < nbPointsByLine; ++j) {
+            int x = mouth.col - nbPointsByLine / 2 + j;
+            int y = mouth.row + i;
+            int idx = y * cols + x;
+            ghostHoles[idx] = true;
+            nbHoles++;
+         }
+    }
 
     return nbHoles;
 }
@@ -230,7 +234,6 @@ static void modelateGhost(int cols, int rows) {
 
 
     // Pass to physic motor only what is necessary
-    printf("copispodfi11");
     int gravity = 1;
     int nbSpheres = 1;
     Motor3DInit(&m, nbPmatsWithoutHoles + nbSpheres, nbLinksWithoutHoles + gravity + nbSpheres * nbPmatsWithoutHoles);
@@ -262,7 +265,7 @@ static void modelateGhost(int cols, int rows) {
 
         for (int i = 0; i < nbPmatsWithoutHoles; ++i) {
             Link3D* levelLink = malloc(sizeof(Link3D));
-            LevelLink3DInit(levelLink, 0.03 * Fe * Fe * 20, 0.013 * Fe * 10);
+            LevelLink3DInit(levelLink, k * 20, xi * 10);
             levelLink->connect(levelLink, sphere1, m.pmats[i]);
             m.links[nbLinksWithoutHoles + 1 + i] = levelLink;
         }
@@ -272,12 +275,18 @@ static void modelateGhost(int cols, int rows) {
 }
 
 void drawVertexTriangle(PMat3D* p1, PMat3D* p2, PMat3D* p3) {
+    glTexCoord2f(0.0, 0.0);
     glVertex3f(p1->position.x, p1->position.y, p1->position.z);
+    glTexCoord2f(1.0, 0.0);
     glVertex3f(p2->position.x, p2->position.y, p2->position.z);
+    glTexCoord2f(0.0, 1.0);
     glVertex3f(p3->position.x, p3->position.y, p3->position.z);
 }
 
 void drawGhost() {
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     glBegin(GL_TRIANGLES); //Begin triangle coordinates
     for(int i = 0; i < ghostWidth - 1; ++i) {
         for(int j = 0; j < ghostHeight; ++j) {
@@ -315,8 +324,12 @@ void drawGhost() {
 
 static void drawg3x()
 {
-    //m.draw(&m);
-    drawGhost();
+    if(shape) {
+        drawGhost();
+    } else {
+        m.draw(&m);
+    }
+
 }
 
 /*
@@ -328,12 +341,10 @@ static void drawg3x()
 
 int main(int argc, char **argv)
 {
-    printf("_____________________AAA________________ \n");
-    printf("start model");
     int width = 1024, height = 512;
     modelateGhost(ghostWidth, ghostHeight);
     m.pmats[50]->position.z += 2;
-
+glEnable(GL_TEXTURE_2D);
     /* creation de la fenetre - titre et tailles (pixels) */
     g3x_InitWindow(*argv,width,height);
     g3x_SetPerspective(40.,100.,1.);
@@ -357,6 +368,20 @@ int main(int argc, char **argv)
      /* initialisation d'une carte de couleurs */
      g3x_FillColorMap(colmap,MAXCOL);
 
+     GLuint tex_2d = SOIL_load_OGL_texture
+         (
+             "GhostMatter.jpg",
+             SOIL_LOAD_AUTO,
+             SOIL_CREATE_NEW_ID,
+             SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
+         );
+     if( 0 == tex_2d )
+     {
+         printf( "SOIL loading error: '%s'\n", SOIL_last_result() );
+     }
+     glBindTexture(GL_TEXTURE_2D, tex_2d);
+     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
      g3x_SetExitFunction(quitg3x  );     /* la fonction de sortie */
      g3x_SetDrawFunction(drawg3x);     /* la fonction de Dessin */
