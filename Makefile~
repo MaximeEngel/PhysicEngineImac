@@ -20,7 +20,7 @@ else               #en mode normal
 endif
 
 # assemblage des infos de lib. et inc.
-lib =   $(libG2X)$(CCEXT) $(libG3X)$(CCEXT) ./libSOIL.a
+lib =   $(libG2X)$(CCEXT) $(libG3X)$(CCEXT) -lSOIL
 # fichiers *.c locaux
 src = src/
 # fichiers *.h locaux et lib.
@@ -46,7 +46,10 @@ td : tdrope.o link.o pmat.o motor.o mathg2x.o
 flag : tdflag.o link3d.o pmat3d.o motor3d.o math3x.o
 	$(CC) $^ $(lib) -o $@
 
-ghost : ghost.o link3d.o pmat3d.o motor3d.o math3x.o
+ghost1 : ghostConditionalLink.o link3d.o pmat3d.o motor3d.o math3x.o
+	$(CC) $^ $(lib) -o $@
+
+ghost2 : ghostNonEuclidian.o link3d.o pmat3d.o motor3d.o math3x.o
 	$(CC) $^ $(lib) -o $@
 
 # règle générique de création de xxx.o à partir de src/xxx.c

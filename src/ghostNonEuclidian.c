@@ -1,6 +1,5 @@
 #include <g3x.h>
 #include "../include/motor3d.h"
-#include <SOIL/SOIL.h>
 
 Motor3D m;
 bool* ghostHoles;
@@ -9,21 +8,17 @@ static G3Xcolor colmap[MAXCOL];
 PMat3D* pmats;
 int ghostWidth = 30;
 int ghostHeight = 30;
-PMat3D* sphere1;
+PMat3D* geo1;
 bool shape = true;
 
+int nbGeo = 2;
 
-G3Xhmat ScaleMat;
-G3Xhmat RotMat;
-G3Xhmat TransMat;
-G3Xhmat InvScaleMat;
-G3Xhmat InvRotMat;
-G3Xhmat InvTransMat;
-G3Xhmat transformWorldToCan;
-G3Xhmat transformWorldToCanTemp;
-G3Xhmat transformCanToWorld;
-G3Xhmat transformCanToWorldTemp;
-double x = 0, y = 0, z = 1, theta = 60, sx = 1.5, sy = 2, sz = 2;
+typedef struct Geo {
+    double x, y, z, theta, sx, sy, sz;
+    int type;
+} Geo;
+
+Geo* geos;
 
 
 /* un fonction associee a un bouton 'popup' : */
@@ -48,7 +43,6 @@ static void animg3x(void)
 
 static void quitg3x()
 {
-  //MotorDestroy(&m);
   fprintf(stderr,"\e[31m->nettoyage et sortie\n\e[0m");
 }
 
@@ -81,44 +75,43 @@ static int modelateHoles(int cols, int rows) {
     mouth.col = cols / 2;
 
 
-    // ______ !!!!!!! ______ Pensez à le mettre à jours pour les autres formes !!!!!
     int nbHoles = 0;
 
     int nbPointsByLine = 1;
     int nbRows = sizeEye * 2 + 1;
 
-    for (int i = -sizeEye; i <= sizeEye; ++i) {
-        for (int j = 0; j < nbPointsByLine; ++j) {
-            int x = leftEye.col - nbPointsByLine / 2 + j;
-            int y = leftEye.row + i;
-            int idx = y * cols + x;
-            ghostHoles[idx] = true;
-            nbHoles++;
+//    for (int i = -sizeEye; i <= sizeEye; ++i) {
+//        for (int j = 0; j < nbPointsByLine; ++j) {
+//            int x = leftEye.col - nbPointsByLine / 2 + j;
+//            int y = leftEye.row + i;
+//            int idx = y * cols + x;
+//            ghostHoles[idx] = true;
+//            nbHoles++;
 
-            x = rightEye.col - nbPointsByLine / 2 + j;
-            y = rightEye.row + i;
-            idx = y * cols + x;
-            ghostHoles[idx] = true;
-            nbHoles++;
-        }
-        if (i < 0) {
-            nbPointsByLine += 2;
-        }
-        else {
-            nbPointsByLine -= 2;
-        }
-    }
+//            x = rightEye.col - nbPointsByLine / 2 + j;
+//            y = rightEye.row + i;
+//            idx = y * cols + x;
+//            ghostHoles[idx] = true;
+//            nbHoles++;
+//        }
+//        if (i < 0) {
+//            nbPointsByLine += 2;
+//        }
+//        else {
+//            nbPointsByLine -= 2;
+//        }
+//    }
 
-    nbPointsByLine = sizeMouth;
-    for (int i = 0 ; i <= sizeMouth; ++i) {
-        for (int j = 0; j < nbPointsByLine; ++j) {
-            int x = mouth.col - nbPointsByLine / 2 + j;
-            int y = mouth.row + i;
-            int idx = y * cols + x;
-            ghostHoles[idx] = true;
-            nbHoles++;
-         }
-    }
+//    nbPointsByLine = sizeMouth;
+//    for (int i = 0 ; i <= sizeMouth; ++i) {
+//        for (int j = 0; j < nbPointsByLine; ++j) {
+//            int x = mouth.col - nbPointsByLine / 2 + j;
+//            int y = mouth.row + i;
+//            int idx = y * cols + x;
+//            ghostHoles[idx] = true;
+//            nbHoles++;
+//         }
+//    }
 
     return nbHoles;
 }
@@ -127,10 +120,10 @@ static void modelateGhost(int cols, int rows) {
     double k = 0.03 * (Fe * Fe);
     double xi = 0.013 * Fe;
 
-    double start_x = -1.0;
-    double end_x = 1.0;
-    double start_y = -1.0;
-    double end_y = 1.0;
+    double start_x = -1.5;
+    double end_x = 1.5;
+    double start_y = -1.5;
+    double end_y = 1.5;
     double z = 1;
 
     double step_x = (fabs(start_x) + fabs(end_x)) / cols;
@@ -249,8 +242,7 @@ static void modelateGhost(int cols, int rows) {
 
     // Pass to physic motor only what is necessary
     int gravity = 1;
-    int nbSpheres = 1;
-    Motor3DInit(&m, nbPmatsWithoutHoles + nbSpheres, nbLinksWithoutHoles + gravity + nbSpheres * nbPmatsWithoutHoles);
+    Motor3DInit(&m, nbPmatsWithoutHoles + nbGeo, nbLinksWithoutHoles + gravity + nbGeo * nbPmatsWithoutHoles);
     int cpt = 0;
     for (int i = 0; i < nbPmatsWithHoles; ++i) {
         if (!ghostHoles[i]) {
@@ -271,28 +263,52 @@ static void modelateGhost(int cols, int rows) {
     }
 
     // Spheres
-    if (nbSpheres != 0 ) {
-//        sphere1 = malloc(sizeof(PMat3D));
-//        PMat3DFixInit(sphere1, (Point3) { 0, 0, 0 });
-//        sphere1->radius = 0.5f;
-//        m.pmats[nbPmatsWithoutHoles] = sphere1;
+    for (int i = 0; i < nbGeo; ++i) {
+        printf("%d ", i);
+        Geo geoData = geos[i];
+        PMat3D* geo = malloc(sizeof(PMat3D));
 
-//        for (int i = 0; i < nbPmatsWithoutHoles; ++i) {
-//            Link3D* levelLink = malloc(sizeof(Link3D));
-//            LevelLink3DInit(levelLink, k * 20, xi * 10);
-//            levelLink->connect(levelLink, sphere1, m.pmats[i]);
-//            m.links[nbLinksWithoutHoles + 1 + i] = levelLink;
-//        }
-        sphere1 = malloc(sizeof(PMat3D));
-        PMat3DCube(sphere1, (Point3) { 0, 0, 0 }, transformCanToWorld, transformWorldToCan);
-        sphere1->radius = 0.5f;
-        m.pmats[nbPmatsWithoutHoles] = sphere1;
+        G3Xhmat ScaleMat;
+        G3Xhmat RotMat;
+        G3Xhmat TransMat;
+        G3Xhmat InvScaleMat;
+        G3Xhmat InvRotMat;
+        G3Xhmat InvTransMat;
+        G3Xhmat transformWorldToCan;
+        G3Xhmat transformWorldToCanTemp;
+        G3Xhmat transformCanToWorld;
+        G3Xhmat transformCanToWorldTemp;
 
-        for (int i = 0; i < nbPmatsWithoutHoles; ++i) {
+        g3x_MakeTranslationXYZ(TransMat, geoData.x, geoData.y, geoData.z);
+        g3x_MakeHomothetieXYZ(ScaleMat, geoData.sx, geoData.sy, geoData.sz);
+        g3x_MakeRotationY(RotMat, geoData.theta * 0.0174);
+        g3x_MakeTranslationXYZ(InvTransMat, -geoData.x, -geoData.y, -geoData.z);
+        g3x_MakeHomothetieXYZ(InvScaleMat, 1.0/geoData.sx, 1.0/geoData.sy, 1.0/geoData.sz);
+        g3x_MakeRotationY(InvRotMat, -geoData.theta * 0.0174);
+        // S*R*T -> world to can
+        g3x_ProdHMat(ScaleMat, RotMat, transformWorldToCanTemp);
+        g3x_ProdHMat(transformWorldToCanTemp, TransMat, transformWorldToCan);
+        // T * R * S -> can to world
+        g3x_ProdHMat(InvTransMat, InvRotMat, transformCanToWorldTemp);
+        g3x_ProdHMat(transformCanToWorldTemp, InvScaleMat, transformCanToWorld);
+
+        switch(geoData.type) {
+            case 0:
+                PMat3DCube(geo, (Point3) { 0, 0, 0 }, transformCanToWorld, transformWorldToCan);
+                break;
+            default:
+                PMat3DSphere(geo, (Point3) { 0, 0, 0 }, transformCanToWorld, transformWorldToCan);
+                break;
+        }
+
+        geo->radius = geoData.sx;
+        m.pmats[nbPmatsWithoutHoles - 1 + gravity + i] = geo;
+
+        for (int j = 0; j < nbPmatsWithoutHoles; ++j) {
             Link3D* geoLink = malloc(sizeof(Link3D));
-            GeoLink3DInit(geoLink, k * 20, xi * 120);
-            geoLink->connect(geoLink, sphere1, m.pmats[i]);
-            m.links[nbLinksWithoutHoles + 1 + i] = geoLink;
+            GeoLink3DInit(geoLink, k * 21, xi * 125);
+            geoLink->connect(geoLink, geo, m.pmats[j]);
+            m.links[nbLinksWithoutHoles + gravity + j + i * nbPmatsWithoutHoles] = geoLink;
         }
     }
 
@@ -300,16 +316,15 @@ static void modelateGhost(int cols, int rows) {
 }
 
 void drawVertexTriangle(PMat3D* p1, PMat3D* p2, PMat3D* p3) {
-    glTexCoord2f(0.0, 0.0);
+//    glTexCoord2f(0.0, 0.0);
     glVertex3f(p1->position.x, p1->position.y, p1->position.z);
-    glTexCoord2f(1.0, 0.0);
+//    glTexCoord2f(1.0, 0.0);
     glVertex3f(p2->position.x, p2->position.y, p2->position.z);
-    glTexCoord2f(0.0, 1.0);
+//    glTexCoord2f(0.0, 1.0);
     glVertex3f(p3->position.x, p3->position.y, p3->position.z);
 }
 
 void drawGhost() {
-    //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     glBegin(GL_TRIANGLES); //Begin triangle coordinates
 
     glEnable(GL_TEXTURE_2D);
@@ -351,19 +366,31 @@ void drawGhost() {
 static void drawg3x()
 {
     if(shape) {
-        g3x_Material(jaune,ambi,diff,spec,shin,1.);
+        g3x_Material(white,ambi,diff,spec,shin,1.);
         drawGhost();
-        g3x_Material(rouge,ambi,diff,spec,shin,1.);
-        glPushMatrix();
-            glTranslatef(-x,-y, -z);
-            glRotatef(-theta,0.,1.,0.);
-            glScalef(1.0/sx * 0.96, 1.0/sy * 0.96, 1.0/sz * 0.96);
-            glutSolidCube(2.);
-        glPopMatrix();
+        float percent = 0.90;
+        g3x_Material(black,ambi,diff,spec,shin,1.);
+
+        for (int i = 0; i < nbGeo; ++i) {
+            Geo geo = geos[i];
+            glPushMatrix();
+                glTranslatef(-geo.x,-geo.y, -geo.z);
+                glRotatef(-geo.theta,0.,1.,0.);
+                glScalef(1.0/geo.sx * percent, 1.0/geo.sy * percent, 1.0/geo.sz * percent);
+                switch (geo.type) {
+                    case 0:
+                        glutSolidCube(2.);
+                        break;
+                    default:
+                        glutSolidSphere(1, 16, 16);
+                        break;
+                }
+
+            glPopMatrix();
+        }
     } else {
         m.draw(&m);
     }
-
 }
 
 /*
@@ -375,22 +402,23 @@ static void drawg3x()
 
 int main(int argc, char **argv)
 {
-    g3x_MakeTranslationXYZ(TransMat, x, y, z);
-    g3x_MakeHomothetieXYZ(ScaleMat, sx, sy, sz);
-    g3x_MakeRotationY(RotMat, theta);
-    g3x_MakeTranslationXYZ(InvTransMat, -x, -y, -z);
-    g3x_MakeHomothetieXYZ(InvScaleMat, 1.0/sx, 1.0/sy, 1.0/sz);
-    g3x_MakeRotationY(InvRotMat, -theta);
-    // S*R*T -> world to can
-    g3x_ProdHMat(ScaleMat, RotMat, transformWorldToCanTemp);
-    g3x_ProdHMat(transformWorldToCanTemp, TransMat, transformWorldToCan);
-    // T * R * S -> can to world
-    g3x_ProdHMat(InvTransMat, InvRotMat, transformCanToWorldTemp);
-    g3x_ProdHMat(transformCanToWorldTemp, InvScaleMat, transformCanToWorld);
+
+    Geo sphere1 = { 0, 0, 0, 30, 1, 2, 2, 1 };
+    Geo sphere2 = { 1, 0, 1, 0, 2, 2, 2, 1 };
+    Geo sphere3 = { 0, 1, 0.3, 0, 2, 2, 2, 1 };
+    Geo cube1 = { 0.7, 1, 0.5, 20, 2, 2, 1.5, 0 };
+    Geo cube2 = { -0.3, 1, 0.7, 0, 2, 2, 2, 0 };
+    nbGeo = 5;
+    geos = malloc(nbGeo * sizeof(Geo));
+    geos[0] = sphere1;
+    geos[1] = cube1;
+    geos[2] = cube2;
+    geos[3] = sphere2;
+    geos[4] = sphere3;
+
 
     int width = 1024, height = 512;
     modelateGhost(ghostWidth, ghostHeight);
-    m.pmats[50]->position.z += 2;
     glEnable(GL_TEXTURE_2D);
     /* creation de la fenetre - titre et tailles (pixels) */
     g3x_InitWindow(*argv,width,height);
@@ -399,7 +427,6 @@ int main(int argc, char **argv)
     //g3x_SetCameraSpheric(0.25*PI,+0.25*PI,6.,(G3Xpoint){0.,0.,0.});
     g3x_SetCameraCartesian((G3Xpoint){0,0.001, 5}, (G3Xpoint){0.,0.,1.});
     g3x_SetScrollWidth(6);
-    g3x_CreateScrollv_d("ghostposition",&(sphere1->position.z),-0.1,  0.1,1.0,"position sphere fantome ");
 
     /* fixe les param. colorimétriques du spot lumineux */
    /* lumiere blanche (c'est les valeurs par defaut)   */
@@ -414,21 +441,6 @@ int main(int argc, char **argv)
 
      /* initialisation d'une carte de couleurs */
      g3x_FillColorMap(colmap,MAXCOL);
-
-     GLuint tex_2d = SOIL_load_OGL_texture
-         (
-             "GhostMatter.jpg",
-             SOIL_LOAD_AUTO,
-             SOIL_CREATE_NEW_ID,
-             SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
-         );
-     if( 0 == tex_2d )
-     {
-         printf( "SOIL loading error: '%s'\n", SOIL_last_result() );
-     }
-     glBindTexture(GL_TEXTURE_2D, tex_2d);
-     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
 
      g3x_SetExitFunction(quitg3x  );     /* la fonction de sortie */
